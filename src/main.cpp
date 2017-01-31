@@ -1,5 +1,5 @@
 /*
-ZJ Wood CPE 471 Lab 3 base code - includes use of glee
+CPE 471 Project 2A w/Lab 3 base code - includes use of glee
 https://github.com/nshkurkin/glee
 */
 
@@ -36,42 +36,42 @@ static const GLfloat g_vertex_buffer_data[] = {
 -1.94f, 1.36f, 0.0f,
 1.1f, 1.65f, 0.0f,
 -1.4f, -1.21f, 0.0f,
-0.08f, -1.56f, 0.0f,
+1.08f, -1.56f, 0.0f,
 -1.09f, -1.26f, 0.0f,
 -1.18f, 1.39f, 0.0f,
-0.31f, 0.29f, 0.0f,
-0.86f, 0.31f, 0.0f,
+1.31f, 1.29f, 0.0f,
+1.86f, 1.31f, 0.0f,
 1.73f, 1.86f, 0.0f,
 -1.05f, 1.65f, 0.0f,
 1.37f, -1.91f, 0.0f,
 -1.29f, 1.38f, 0.0f,
 1.08f, 1.44f, 0.0f,
-1.64f, 0.87f, 0.0f,
+1.64f, 1.87f, 0.0f,
 -1.23f, -1.35f, 0.0f,
-0.45f, 1.46f, 0.0f,
--1.62f, 0.91f, 0.0f,
+1.45f, 1.46f, 0.0f,
+-1.62f, 1.91f, 0.0f,
 -1.18f, 1.84f, 0.0f,
 -1.35f, -1.65f, 0.0f,
 1.75f, 1.44f, 0.0f,
-0.1f, -1.01f, 0.0f,
+1.1f, -1.01f, 0.0f,
 -1.9f, 1.3f, 0.0f,
-0.04f, -1.6f, 0.0f,
+1.04f, -1.6f, 0.0f,
 -1.17f, -1.64f, 0.0f,
 1.74f, -1.63f, 0.0f,
 1.01f, -1.06f, 0.0f,
-0.16f, -1.55f, 0.0f,
+1.16f, -1.55f, 0.0f,
 -1.54f, -1.97f, 0.0f,
-0.27f, 0.27f, 0.0f,
+1.27f, 1.27f, 0.0f,
 1.93f, -1.78f, 0.0f,
-0.21f, 0.05f, 0.0f,
+1.21f, 1.05f, 0.0f,
 1.23f, 1.57f, 0.0f,
--1.34f, 0.45f, 0.0f,
+-1.34f, 1.45f, 0.0f,
 -1.25f, -1.44f, 0.0f,
-1.75f, 0.11f, 0.0f,
+1.75f, 1.11f, 0.0f,
 1.63f, 1.49f, 0.0f,
 -1.57f, 1.69f, 0.0f,
--1.29f, 0.8f, 0.0f,
-1.89f, 0.9f, 0.0f,
+-1.29f, 1.8f, 0.0f,
+1.89f, 1.9f, 0.0f,
 1.16f, -1.38f, 0.0f,
 
 };
@@ -154,6 +154,9 @@ static void init()
 	prog->addUniform("P");
 	prog->addUniform("MV");
 	prog->addAttribute("vertPos");
+	prog->addUniform("W");
+	prog->addUniform("H");
+	prog->addUniform("T");
 }
 
 
@@ -176,6 +179,10 @@ static void render()
 	// Create the matrix stacks - please leave these alone for now
 	auto P = make_shared<MatrixStack>();
 	auto MV = make_shared<MatrixStack>();
+	auto W = width;
+	auto H = height;
+
+	float T = glfwGetTime();
 	// Apply orthographic projection.
 	P->pushMatrix();
 	if (width > height) {
@@ -191,6 +198,9 @@ static void render()
 	//send the matrices to the shaders
 	glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P->topMatrix()));
 	glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, value_ptr(MV->topMatrix()));
+	glUniform1i(prog->getUniform("W"), W);
+	glUniform1i(prog->getUniform("H"), H);
+	glUniform1f(prog->getUniform("T"), T);
 
 	//we need to set up the vertex array
 	glEnableVertexAttribArray(0);
@@ -236,7 +246,7 @@ int main(int argc, char **argv)
 	pixW = 640;
 	pixH = 480;
 	// Create a windowed mode window and its OpenGL context.
-	window = glfwCreateWindow(pixW, pixH, "hello triangle", NULL, NULL);
+	window = glfwCreateWindow(pixW, pixH, "Project 2A", NULL, NULL);
 	if(!window) {
 		glfwTerminate();
 		return -1;
