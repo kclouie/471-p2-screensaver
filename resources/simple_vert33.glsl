@@ -10,8 +10,15 @@ void main()
 {
 	vec3 v = vec3(0.0, 0.0, 0.0) - vertPos;
 	vec4 trans = vec4(vertPos + (T*.25) * v, 1.0);
-	gl_Position = P * MV * trans;
-//	if (distance(trans, vec4(0.0, 0.0, 0.0, 1.0)) > 1){
-//		gl_Position = P * MV * trans;
-//	}
+	float d1 = distance(vertPos, vec3(0.0, 0.0, 0.0));
+	float d2 = distance(trans, vec4(0.0, 0.0, 0.0, 1.0));
+	if (d2 > 1.0 && d2 < d1){
+		gl_Position = P * MV * trans;
+	}
+	else {
+		float angle = atan(vertPos.y, vertPos.x);
+		float x = cos(angle);
+		float y = sin(angle);
+		gl_Position = P * MV * vec4(x, y, 0.0, 1.0);
+	}
 }
