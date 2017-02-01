@@ -154,8 +154,6 @@ static void init()
 	prog->addUniform("P");
 	prog->addUniform("MV");
 	prog->addAttribute("vertPos");
-	prog->addUniform("W");
-	prog->addUniform("H");
 	prog->addUniform("T");
 }
 
@@ -179,9 +177,6 @@ static void render()
 	// Create the matrix stacks - please leave these alone for now
 	auto P = make_shared<MatrixStack>();
 	auto MV = make_shared<MatrixStack>();
-	auto W = width;
-	auto H = height;
-
 	float T = glfwGetTime();
 	// Apply orthographic projection.
 	P->pushMatrix();
@@ -198,8 +193,6 @@ static void render()
 	//send the matrices to the shaders
 	glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P->topMatrix()));
 	glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, value_ptr(MV->topMatrix()));
-	glUniform1i(prog->getUniform("W"), W);
-	glUniform1i(prog->getUniform("H"), H);
 	glUniform1f(prog->getUniform("T"), T);
 
 	//we need to set up the vertex array
