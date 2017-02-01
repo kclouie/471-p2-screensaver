@@ -28,7 +28,7 @@ int pixW, pixH;
 GLFWwindow *window; // Main application window
 string RESOURCE_DIR = ""; // Where the resources are loaded from
 shared_ptr<Program> prog1; // shader program for points
-/*shared_ptr<Program> prog2; */ // shader program for background
+shared_ptr<Program> prog2; // shader program for background
 
 /* Global data associated with point geometry */
 GLuint VertexArrayID;
@@ -75,8 +75,19 @@ static const GLfloat g_vertex_buffer_data[] = {
 1.16f, -1.38f, 0.0f,
 };
 
+static const GLfloat g_bg_buffer_data[] = {
+-5.0f, -5.0f, 0.0f,
+-5.0, 5.0f, 0.0f,
+5.0f, 5.0f, 0.0f,
+
+5.0f, 5.0f, 0.0f,
+5.0f, -5.0f, 0.0f,
+-5.0f, -5.0f, 0.0f,
+};
+
 //data necessary to give our triangle data to OGL
 GLuint vertexbuffer; 
+GLuint bgbuffer;
 
 static void error_callback(int error, const char *description)
 {
@@ -133,6 +144,11 @@ static void initGeom() {
 	//actually memcopy the data - only do this once
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_DYNAMIC_DRAW);
 
+	glGenBuffers(1, &bgbuffer);
+        //set the current state to focus on our vertex buffer
+        glBindBuffer(GL_ARRAY_BUFFER, bgbuffer);
+        //actually memcopy the data - only do this once
+        glBufferData(GL_ARRAY_BUFFER, sizeof(g_bg_buffer_data), g_bg_buffer_data, GL_DYNAMIC_DRAW);
 }
 
 //General OGL initialization - set OGL state here
@@ -157,7 +173,7 @@ static void init()
 	prog1->addUniform("H");
 	prog1->addUniform("T");
 
-/*	prog2 = make_shared<Program>();
+	prog2 = make_shared<Program>();
 	prog2->setVerbose(true);
 	prog2->setShaderNames(RESOURCE_DIR + "vertq33.glsl", RESOURCE_DIR + "fragq33.glsl");
 	prog2->init();
@@ -166,7 +182,7 @@ static void init()
 	prog2->addAttribute("vertPos");
 	prog2->addUniform("W");
         prog2->addUniform("H");
-        prog2->addUniform("T"); */
+        prog2->addUniform("T"); 
 }
 
 
@@ -227,7 +243,7 @@ static void render()
 /* End point program */
 
 /* Begin background program */
-/*	prog2->bind();
+	prog2->bind();
 
 	//send the matrices to the shaders
         glUniformMatrix4fv(prog2->getUniform("P"), 1, GL_FALSE, value_ptr(P->topMatrix()));
@@ -236,7 +252,16 @@ static void render()
         glUniform1i(prog2->getUniform("H"), H);
         glUniform1f(prog2->getUniform("T"), T);
 
-	prog2->unbind(); */
+	//we need to set up the vertex array
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, bgbuffer);
+        //key function to get up how many elements to pull out at a time (3)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+
+        //actually draw from vertex 0, 3 vertices
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDisableVertexAttribArray(0);
+	prog2->unbind();
 /* End background program */
 
 	// Pop matrix stacks.
