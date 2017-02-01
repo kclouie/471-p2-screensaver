@@ -182,7 +182,10 @@ static void init()
 	prog2->addAttribute("vertPos");
 	prog2->addUniform("W");
         prog2->addUniform("H");
-        prog2->addUniform("T"); 
+	prog2->addUniform("p0x");
+	prog2->addUniform("p0y");
+	prog2->addUniform("p1x");
+	prog2->addUniform("p1y");
 }
 
 
@@ -207,7 +210,18 @@ static void render()
 	auto MV = make_shared<MatrixStack>();
 	auto W = width;
 	auto H = height;
+	float x0 = 0;
+	float y0 = 0;
+	float x1 = W;
+	float y1 = H;
 	float T = glfwGetTime();
+
+	float lineradius = distance(vec2(x0, y0), vec2(W/2, H/2));
+	float p0x = x0 + lineradius*cos(T + 3.14);
+	float p0y = y0 + lineradius*sin(T + 3.14);
+	float p1x = x1 + lineradius*cos(T);
+	float p1y = y1 + lineradius*sin(T); 
+
 	// Apply orthographic projection.
 	P->pushMatrix();
 	if (width > height) {
@@ -217,7 +231,7 @@ static void render()
 	}
 	MV->pushMatrix();
 
-/* Begin point program */
+/* Begin prog1 */
 	// Draw the points using GLSL.
 	prog1->bind();
 
@@ -240,9 +254,9 @@ static void render()
 	glDisableVertexAttribArray(0);
 	
 	prog1->unbind();
-/* End point program */
+/* End prog1 */
 
-/* Begin background program */
+/* Begin prog2 */
 	prog2->bind();
 
 	//send the matrices to the shaders
@@ -250,7 +264,10 @@ static void render()
         glUniformMatrix4fv(prog2->getUniform("MV"), 1, GL_FALSE, value_ptr(MV->topMatrix()));
         glUniform1i(prog2->getUniform("W"), W);
         glUniform1i(prog2->getUniform("H"), H);
-        glUniform1f(prog2->getUniform("T"), T);
+	glUniform1f(prog2->getUniform("p0x"), p0x);
+	glUniform1f(prog2->getUniform("p0y"), p0y);
+	glUniform1f(prog2->getUniform("p1x"), p1x);
+	glUniform1f(prog2->getUniform("p1y"), p1y);
 
 	//we need to set up the vertex array
         glEnableVertexAttribArray(0);
@@ -262,7 +279,7 @@ static void render()
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glDisableVertexAttribArray(0);
 	prog2->unbind();
-/* End background program */
+/* End prog2 */
 
 	// Pop matrix stacks.
 	MV->popMatrix();
