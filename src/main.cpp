@@ -27,10 +27,10 @@ int pixW, pixH;
 
 GLFWwindow *window; // Main application window
 string RESOURCE_DIR = ""; // Where the resources are loaded from
-shared_ptr<Program> prog; //our shader program
+shared_ptr<Program> prog1; // shader program for points
+/*shared_ptr<Program> prog2; */ // shader program for background
 
-/* Global data associated with triangle geometry - this will likely vary
-   in later programs - so is left explicit for now  */
+/* Global data associated with point geometry */
 GLuint VertexArrayID;
 static const GLfloat g_vertex_buffer_data[] = {
 -1.94f, 0.36f, 0.0f,
@@ -73,7 +73,6 @@ static const GLfloat g_vertex_buffer_data[] = {
 -1.29f, 1.8f, 0.0f,
 1.89f, 1.9f, 0.0f,
 1.16f, -1.38f, 0.0f,
-
 };
 
 //data necessary to give our triangle data to OGL
@@ -147,14 +146,27 @@ static void init()
 	glEnable(GL_DEPTH_TEST);
 
 	// Initialize the GLSL program.
-	prog = make_shared<Program>();
-	prog->setVerbose(true);
-	prog->setShaderNames(RESOURCE_DIR + "simple_vert33.glsl", RESOURCE_DIR + "simple_frag33.glsl");
-	prog->init();
-	prog->addUniform("P");
-	prog->addUniform("MV");
-	prog->addAttribute("vertPos");
-	prog->addUniform("T");
+	prog1 = make_shared<Program>();
+	prog1->setVerbose(true);
+	prog1->setShaderNames(RESOURCE_DIR + "simple_vert33.glsl", RESOURCE_DIR + "simple_frag33.glsl");
+	prog1->init();
+	prog1->addUniform("P");
+	prog1->addUniform("MV");
+	prog1->addAttribute("vertPos");
+	prog1->addUniform("W");
+	prog1->addUniform("H");
+	prog1->addUniform("T");
+
+/*	prog2 = make_shared<Program>();
+	prog2->setVerbose(true);
+	prog2->setShaderNames(RESOURCE_DIR + "vertq33.glsl", RESOURCE_DIR + "fragq33.glsl");
+	prog2->init();
+	prog2->addUniform("P");
+        prog2->addUniform("MV");
+	prog2->addAttribute("vertPos");
+	prog2->addUniform("W");
+        prog2->addUniform("H");
+        prog2->addUniform("T"); */
 }
 
 
@@ -177,6 +189,8 @@ static void render()
 	// Create the matrix stacks - please leave these alone for now
 	auto P = make_shared<MatrixStack>();
 	auto MV = make_shared<MatrixStack>();
+	auto W = width;
+	auto H = height;
 	float T = glfwGetTime();
 	// Apply orthographic projection.
 	P->pushMatrix();
@@ -187,13 +201,16 @@ static void render()
 	}
 	MV->pushMatrix();
 
-	// Draw the triangle using GLSL.
-	prog->bind();
+/* Begin point program */
+	// Draw the points using GLSL.
+	prog1->bind();
 
 	//send the matrices to the shaders
-	glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P->topMatrix()));
-	glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, value_ptr(MV->topMatrix()));
-	glUniform1f(prog->getUniform("T"), T);
+	glUniformMatrix4fv(prog1->getUniform("P"), 1, GL_FALSE, value_ptr(P->topMatrix()));
+	glUniformMatrix4fv(prog1->getUniform("MV"), 1, GL_FALSE, value_ptr(MV->topMatrix()));
+	glUniform1i(prog1->getUniform("W"), W);
+	glUniform1i(prog1->getUniform("H"), H);
+	glUniform1f(prog1->getUniform("T"), T);
 
 	//we need to set up the vertex array
 	glEnableVertexAttribArray(0);
@@ -206,7 +223,21 @@ static void render()
 	glDrawArrays(GL_POINTS, 0, 40);
 	glDisableVertexAttribArray(0);
 	
-	prog->unbind();
+	prog1->unbind();
+/* End point program */
+
+/* Begin background program */
+/*	prog2->bind();
+
+	//send the matrices to the shaders
+        glUniformMatrix4fv(prog2->getUniform("P"), 1, GL_FALSE, value_ptr(P->topMatrix()));
+        glUniformMatrix4fv(prog2->getUniform("MV"), 1, GL_FALSE, value_ptr(MV->topMatrix()));
+        glUniform1i(prog2->getUniform("W"), W);
+        glUniform1i(prog2->getUniform("H"), H);
+        glUniform1f(prog2->getUniform("T"), T);
+
+	prog2->unbind(); */
+/* End background program */
 
 	// Pop matrix stacks.
 	MV->popMatrix();
